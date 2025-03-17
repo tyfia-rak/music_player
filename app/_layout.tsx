@@ -1,13 +1,10 @@
-import { View, Text } from 'react-native'
 import React from 'react'
 import"../global.css"
+import Index from '@/components/layout/Index'
+
 
 const _layout = () => {
-  return (
-    <View className='flex h-screen '>
-      <Text>_layout</Text>
-    </View>
-  )
+  return <Index/>
 }
 
 export default _layout
