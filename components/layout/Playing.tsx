@@ -9,11 +9,11 @@ const Playing = () => {
   return (
     <View className='h-screen'>
         <View className='flex-row justify-between mx-7 items-center mt-7'>
-            <NeumorphicButton icon='arrow-back' onPress={()=>null} padding={"4"}/>
+            <NeumorphicButton icon='arrow-back' onPress={()=>null} style='p-4 bg-gray-700'/>
                 <Text className='text-center text-white font-semibold text-sm uppercase'>
                     playing now
                 </Text>
-                <NeumorphicButton icon='menu' onPress={() => null} padding={"4"}/>
+                <NeumorphicButton icon='menu' onPress={() => null} style='p-4 bg-gray-700'/>
         </View>
         <View className='items-center mt-20 rounded-full border-2 boder-[#2a2d2fcd] shadow-inner shadow-gray-700 mx-auto'>
             <Image source={coverimage}  alt='image' width={250} height={250} className='rounded-full shadow-lg shadow-black'/>
@@ -30,9 +30,9 @@ const Playing = () => {
             <Text className='text-gray-400'>3:54</Text>
         </View>
         <View className='flex-row justify-evenly mx-7 items-center'>
-            <NeumorphicButton icon='play-skip-back' onPress={()=>null} padding={"6"}/>
-            <NeumorphicButton icon='pause' onPress={()=>null} padding={"6"} color="orange-500"/>
-            <NeumorphicButton icon='play-skip-forward' onPress={()=>null} padding={"6"}/>
+            <NeumorphicButton icon='play-skip-back' onPress={()=>null} style='p-6 bg-gray-700'/>
+            <NeumorphicButton icon='pause' onPress={()=>null} style='p-6 bg-orange-700'/>
+            <NeumorphicButton icon='play-skip-forward' onPress={()=>null} style='p-6 bg-gray-700'/>
         </View>
     </View>
   )
