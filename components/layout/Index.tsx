@@ -1,20 +1,49 @@
 import { View, Text } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import * as MediaLibrary from "expo-media-library";
 import MusicList from "./MusicList";
 import Playing from "./Playing";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { musicData } from "@/data/music";
-import {Audio, AVPlaybackStatus} from "expo-av"
+import { Audio, AVPlaybackStatus } from "expo-av";
 import { MusicType } from "@/data/musicTypes";
-const Index = () => {  const [tabSelected, setTabSelected] = useState<"list" | "playing">("playing");
+import coverimage from "@/assets/assets.jpeg";
+
+export interface Song {
+  song: MusicType;
+  index: number;
+}
+
+const Index = () => {
+  const [tabSelected, setTabSelected] = useState<"list" | "playing">("playing");
   const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [position, setPosition] = useState<number>(0);
   const [duration, setDuration] = useState<number>(1);
+  const [musicData, setMusicData] = useState<MusicType[]>([]);
+  const [currentSong, setCurrentSong] = useState<Song>();
 
-  const currentSong: MusicType = musicData[currentSongIndex];
+  useEffect(() => {
+    const fetchMusicFiles = async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status === "granted") {
+        const media = await MediaLibrary.getAssetsAsync({
+          mediaType: MediaLibrary.MediaType.audio,
+          first: 100,
+        });
+        const formattedMusic = media.assets.map((item) => ({
+          id: item.id,
+          title: item.filename,
+          artist: "Unknown Artist",
+          artwork: item.uri,
+          uri: item.uri,
+        }));
+        setCurrentSong({ song: formattedMusic[0], index: 0 });
+        setMusicData(formattedMusic);
+      }
+    };
+    fetchMusicFiles();
+  }, []);
 
   useEffect(() => {
     return sound
@@ -25,64 +54,73 @@ const Index = () => {  const [tabSelected, setTabSelected] = useState<"list" | "
   }, [sound]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-
-    if (sound && isPlaying) {
-      interval = setInterval(async () => {
-        const status = (await sound.getStatusAsync()) as AVPlaybackStatus;
-        if (status.isLoaded && !status.didJustFinish) {
+    if (sound) {
+      sound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
+        if (status.isLoaded) {
           setPosition(status.positionMillis);
           setDuration(status.durationMillis || 1);
+          if (status.didJustFinish) {
+            handleNext();
+          }
         }
-      }, 500);
+      });
     }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [sound, isPlaying]);
+  }, [sound]);
 
   const playSound = async (index: number) => {
     if (sound) await sound.unloadAsync();
+    if (!musicData[index]) return;
 
     const { sound: newSound } = await Audio.Sound.createAsync(
-      { uri: musicData[index].url },
+      { uri: musicData[index].uri },
       { shouldPlay: true }
     );
 
-    newSound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
-      if (status.isLoaded && status.didJustFinish) {
-        handleNext();
-      }
-    });
-
     setSound(newSound);
-    if (currentSongIndex !== index) {
-      setCurrentSongIndex(index);
-    }
+    setCurrentSong({ song: musicData[index], index: index });
     setIsPlaying(true);
   };
 
-  const handlePlayPause = async () => {
-    if (!sound) return;
-    if (isPlaying) {
-      await sound.pauseAsync();
-    } else {
-      await sound.playAsync();
+  const handlePlayPause = useCallback(
+    async (index: number) => {
+      if (!sound) return;
+
+      const status = await sound.getStatusAsync();
+      if (!status.isLoaded) return;
+
+      if (currentSong?.index === index) {
+        if (isPlaying) {
+          await sound.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          await sound.playAsync();
+          setIsPlaying(true);
+        }
+      } else {
+        await playSound(index);
+      }
+    },
+    [currentSong, isPlaying, sound, playSound]
+  );
+
+  const handleNext = useCallback(() => {
+    if (musicData.length === 0) return;
+    else if (currentSong) {
+      const nextIndex = (currentSong?.index + 1) % musicData.length;
+      playSound(nextIndex);
     }
-    setIsPlaying(!isPlaying);
-  };
+  }, [currentSong, musicData]);
 
-  const handleNext = () => {
-    const nextIndex = (currentSongIndex + 1) % musicData.length;
-    playSound(nextIndex);
-  };
-
-  const handlePrev = () => {
-    const prevIndex =
-      currentSongIndex - 1 < 0 ? musicData.length - 1 : currentSongIndex - 1;
-    playSound(prevIndex);
-  };
+  const handlePrev = useCallback(() => {
+    if (musicData.length === 0) return;
+    else if (currentSong) {
+      const prevIndex =
+        currentSong.index - 1 < 0
+          ? musicData.length - 1
+          : currentSong.index - 1;
+      playSound(prevIndex);
+    }
+  }, [currentSong, musicData]);
 
   const handleSeek = async (value: number) => {
     if (sound) {
@@ -102,7 +140,6 @@ const Index = () => {  const [tabSelected, setTabSelected] = useState<"list" | "
               playSound={playSound}
               currentSong={currentSong}
               isPlaying={isPlaying}
-              currentSongIndex={currentSongIndex}
               handlePlayPause={handlePlayPause}
             />
           ) : (

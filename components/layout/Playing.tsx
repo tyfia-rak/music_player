@@ -5,10 +5,11 @@ import NeumorphicButton from "./NeumorphicButton";
 import coverimage from "@/assets/assets.jpeg";
 import Slider from "@react-native-community/slider";
 import { MusicType } from "@/data/musicTypes";
+import { Song } from "./Index";
 
 interface Props {
   setTabSelected: any;
-  currentSong: MusicType;
+  currentSong?: Song;
   handlePlayPause: Function;
   handleNext: Function;
   handlePrev: Function;
@@ -52,20 +53,26 @@ const Playing = ({
         />
       </View>
       <View className="items-center mt-20 rounded-full border-2 border-[#2a2d2fcd] shadow-inner shadow-gray-700 mx-auto">
-        <Image
-          source={currentSong ? { uri: currentSong.artwork } : coverimage}
-          alt="image"
-          width={250}
-          height={250}
-          className="rounded-full shadow-lg shadow-black"
-        />
+        {currentSong && (
+          <Image
+            source={
+              currentSong.song.artwork
+                ? { uri: currentSong.song.artwork }
+                : coverimage
+            }
+            alt="image"
+            width={250}
+            height={250}
+            className="rounded-full shadow-lg shadow-black"
+          />
+        )}
       </View>
       <View className="mt-20">
-        <Text className="text-center text-4xl text-white font-semibold mb-1">
-          {currentSong?.title}
+        <Text className="text-center text-4xl text-white font-semibold mb-1 line-clamp-2 px-2">
+          {currentSong?.song.title}
         </Text>
         <Text className="text-center text-sm text-gray-400 font-semibold mb-1">
-          {currentSong?.artist}
+          {currentSong?.song.artist}
         </Text>
       </View>
       <View className="mb-8 mt-20 px-7">
@@ -91,7 +98,7 @@ const Playing = ({
         />
         <NeumorphicButton
           icon={isPlaying ? "pause" : "play"}
-          onPress={() => handlePlayPause()}
+          onPress={() => handlePlayPause(currentSong?.index)}
           style="p-6 bg-orange-700"
         />
         <NeumorphicButton
