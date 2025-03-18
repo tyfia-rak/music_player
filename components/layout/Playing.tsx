@@ -1,10 +1,8 @@
 import { View, Text, Image } from "react-native";
 import React from "react";
-import { Ionicons } from "@expo/vector-icons";
 import NeumorphicButton from "./NeumorphicButton";
 import coverimage from "@/assets/assets.jpeg";
 import Slider from "@react-native-community/slider";
-import { MusicType } from "@/data/musicTypes";
 import { Song } from "./Index";
 
 interface Props {

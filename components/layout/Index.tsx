@@ -1,4 +1,3 @@
-import { View, Text } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import * as MediaLibrary from "expo-media-library";
 import MusicList from "./MusicList";
@@ -7,7 +6,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { MusicType } from "@/data/musicTypes";
-import coverimage from "@/assets/assets.jpeg";
 
 export interface Song {
   song: MusicType;
